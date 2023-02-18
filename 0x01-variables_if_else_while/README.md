@@ -1,2 +1,2 @@
-positve of negatives
+prints the last and first digits
 
