@@ -1,2 +1,1 @@
-prints the last and first digits
-
+last digits
