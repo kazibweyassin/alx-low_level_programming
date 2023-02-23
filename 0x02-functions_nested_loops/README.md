@@ -1,1 +1,1 @@
-putchar created
+number zero
