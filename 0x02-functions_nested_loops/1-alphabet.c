@@ -1,4 +1,6 @@
-#include <main.h>
+#include "main.h"
+#include "stdio.h"
+
 /**
  * main - prints the alphabet
  * Return: Always(Success)
@@ -13,4 +15,5 @@ int main(void)
 	_putchar(c);
 	}
 	putchar('\n');
+return (0);
 }
