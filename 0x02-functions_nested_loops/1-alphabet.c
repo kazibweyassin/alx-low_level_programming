@@ -1,6 +1,5 @@
 #include "main.h"
 #include "stdio.h"
-
 /**
  * main - prints the alphabet
  * Return: Always(Success)
