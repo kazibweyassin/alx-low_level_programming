@@ -6,6 +6,7 @@
  * @n: times to print elements
  */
 void print_array(int *a, int n)
+
 {
 	int i;
 
@@ -19,4 +20,4 @@ void print_array(int *a, int n)
 		}
 	}
 	putchar('\n');
-} 
+}
