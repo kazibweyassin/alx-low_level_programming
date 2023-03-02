@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
-
+int _atoi(char *s);
 void reset_to_98(int *n);
 int _putchar(char c);
 void swap_int(int *a, int *b);
