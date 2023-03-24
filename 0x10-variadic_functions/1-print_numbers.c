@@ -1,5 +1,5 @@
 #include <stdarg.h>
-#include "variandic_functions.h"
+#include "variadic_functions.h"
 /**
  * print_numbers-  prints numbers
  * @separator: string between numbers
@@ -12,19 +12,19 @@ void print_numbers(const char *separator, const unsigned int n, ...)
 
 	va_list numbers;
 
-	va_start(number, n);
+	va_start(numbers, n);
 
 	for (i = 0 ; i < n ; i++)
 	{
-		printf("%d", va_arg(number, int));
+		printf("%d", va_arg(numbers, int));
 
-		if (seperator != NULL && i < n - 1)
+		if (separator != NULL && i < n - 1)
 		{
-			printf("%s", seperator);
+			printf("%s", separator);
 		}
 
 
 	}
-	va_end(number);
+	va_end(numbers);
 	printf("\n");
 }
