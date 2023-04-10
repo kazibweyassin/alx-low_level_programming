@@ -25,18 +25,18 @@ int main(int argc, char *argv[])
 
 	fu = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (fu == -1)
-	{dprintf(STDERR_FILENO, "Fatal Error:I  Can't write to %s\n", argv[2]), exit(99);
+	{dprintf(STDERR_FILENO, "Err:I  Can't write to %s\n", argv[2]), exit(99);
 	}
 
 	while ((reading = read(fo, buffer, 1024)) != 0)
 	{
 		if (reading == -1)
-		{dprintf(STDERR_FILENO, "Fatal Error: Can't read from file %s\n", argv[1]);
+		{dprintf(STDERR_FILENO, "Fatal Err: Can't read from file %s\n", argv[1]);
 			exit(98);
 		}
 		writing = write(fu, buffer, reading);
 		if (writing == -1)
-		{dprintf(STDERR_FILENO, "Fatal Error: Can't write to %s\n", argv[2]), exit(99);
+		{dprintf(STDERR_FILENO, " Err: Can't write to %s\n", argv[2]), exit(99);
 		}
 	}
 
