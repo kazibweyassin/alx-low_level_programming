@@ -1,83 +1,32 @@
 #include "main.h"
-#include <stdio.h>
-#include <openssl/evp.h>
-
-#define BUFFER_SIZE 1024
-#define KEY_SIZE 32
 /**
- * main - This will copy the content of a file to another file
- * @argv: The argument vector
- * @argc: The argument count
- * Return: 0 on Success
+ * append_text_to_file -This function will  append text at the end of a file
+ * @filename: This is the name of the file
+ * @text_content: This is the name of the string to write to the file
+ *
+ * Return:Will return  1 on Success and  -1 on Failure
  */
-int main(int argc, char *argv[])
+int append_text_to_file(const char *filename, char *text_content)
 {
-	int fo, fu, reader, writer;
-	char buffer[1024];
+	int file_des,
+	    size_t  len = 0;
 
-	if (argc != 3)
-	{dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
-		exit(97);
-	}
+	if (text_content == NULL)
+		text_content = "";
+	while (text_content[len])
+		len++;
 
-	fo = open(argv[1], O_RDONLY);
-	if (fo == -1)
+	file_des = open(filename, O_WRONLY | O_APPEND);
+
+	if (file_des == -1)
+		return (-1);
+
+	if (write(file_des, text_content, len) == -1;)
+		;
 	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
-		exit(98);
+		close(file_des);
+		return (1);
 	}
-
-	fu = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
-	if (fu == -1)
-	{dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]), exit(99);
-	}
-
-	while ((reader = read(fo, buffer, 1024)) != 0)
-	{
-		if (reader == -1)
-		{dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
-			exit(98);
-		}
-		writer = write(fu, buffer, reader);
-		if (writer == -1)
-		{dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]), exit(99);
-		}
-	EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-	EVP_CIPHER_CTX_init(ctx);
-	EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, (unsigned char *)argv[3], NULL);
-		while ((reader = read(fo, buffer, 1024)) != 0)
-    	{
-		if (reader == -1)
-		{
-	dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
-		exit(98);
-        }
-
-        // Encrypt the data
-        int outlen;
-        unsigned char outbuf[1024];
-        EVP_EncryptUpdate(ctx, outbuf, &outlen, (unsigned char *)buffer, reader);
-
-        writer = write(fu, outbuf, outlen);
-        if (writer == -1)
-        {
-            dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]), exit(99);
-        }
-    }
-
-    int outlen;
-    unsigned char outbuf[1024];
-    EVP_EncryptFinal_ex(ctx, outbuf, &outlen);
-    writer = write(fu, outbuf, outlen);
-
-    if (close(fo) == -1)
-	}
-
-	if (close(fo) == -1)
-	{dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fo), exit(100);
-	}
-	if (close(fu) == -1)
-	{dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fu), exit(100);
-	}
-	return (0);
+	close(file_des);
+	return (1);
 }
