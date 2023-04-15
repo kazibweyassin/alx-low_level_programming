@@ -1,51 +1,40 @@
 #include "main.h"
-#include <stdio.h>
-#include <openssl/evp.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
 /**
- * main - This will copy the content of a file to another file
- * @argv: The argument vector
- * @argc: The argument count
- * Return: 0 on Success
+ * create_file - creates a file and write to it
+ * @filename:  filename to create
+ * @text_content:  text to write to it
+ * Return: 1 on success, -1 on failure
  */
-int main(int argc, char *argv[])
+int create_file(const char *filename, char *text_content)
 {
-	int fo, fu, reader, writer;
-	char buffer[1024];
+	int desc, text_size;
+	ssize_t wstat;
 
-	if (argc != 3)
-	{dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
-		exit(97);
-	}
+	if (!filename)
+		return (-1);
 
-	fo = open(argv[1], O_RDONLY);
-	if (fo == -1)
+	/*first call is to create file only if non-existent*/
+	desc = open(filename, O_RDWR | O_CREAT | O_EXCL, 0600);
+	if (desc < 0)
+		desc = open(filename, O_RDWR | O_TRUNC);
+	if (desc < 0)
+		return (-1);
+	if (!text_content || text_content[0] == '\0')
 	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
-		exit(98);
+		close(desc);
+		return (1);
 	}
 
-	fu = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
-	if (fu == -1)
-	{dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]), exit(99);
-	}
+	for (text_size = 0; text_content[text_size]; text_size++)
+		;
+	wstat = write(desc, text_content, text_size);
 
-	while ((reader = read(fo, buffer, 1024)) != 0)
-	{
-		if (reader == -1)
-		{dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
-			exit(98);
-		}
-		writer = write(fu, buffer, reader);
-		if (writer == -1)
-		{dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]), exit(99);
-		}
-		}
+	close(desc);
+	if (wstat != text_size)
+		return (-1);
+	return (1);
 
-	if (close(fo) == -1)
-	{dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fo), exit(100);
-	}
-	if (close(fu) == -1)
-	{dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fu), exit(100);
-	}
-	return (0);
 }
