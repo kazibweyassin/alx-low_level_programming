@@ -1,116 +1,73 @@
-#include "main.h"
-#include <unistd.h>
 #include <stdio.h>
-#include <fcntl.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 
-#define ARGERR 97
-#define ARGMESS "Usage: cp file_from file_to\n"
-
-#define RERR 98
-#define RMESS "Error: Can\'t read from file %s\n"
-
-#define WERR 99
-#define WMESS "Error: Can\'t write to %s\n"
-
-#define CLERR 100
-#define CLMESS "Error: Can\'t close fd %i\n"
-
+void check_IO_stat(int stat, int fd, char *filename, char mode);
 /**
- * errexit - exit with an error
- * @stat: the exit status
- * @estr: an extra string
- * @eint: an extra int
+ * main - copies the content of one file to another
+ * @argc: argument count
+ * @argv: arguments passed
+ *
+ * Return: 1 on success, exit otherwise
  */
-void errexit(int stat, char *estr, int eint)
+int main(int argc, char *argv[])
 {
-	if (stat == CLERR)
-		dprintf(STDERR_FILENO, CLMESS, eint);
-	else if (stat == ARGERR)
-		dprintf(STDERR_FILENO, ARGMESS);
-	else if (stat == WERR)
-		dprintf(STDERR_FILENO, WMESS, estr);
-	else
-		dprintf(STDERR_FILENO, RMESS, estr);
-
-	exit(stat);
-}
-
-/**
- * myclose - close a file and exit with error if impossible
- * @fd: the file descriptor to close
- */
-void myclose(int fd)
-{
-	if (close(fd) < 0)
-		errexit(CLERR, NULL, fd);
-}
-
-
-/**
- * initwrite - initialize the write file
- * @filename: the filename to initialize
- * Return: the file descriptor to check if negative
- */
-int initwrite(char *filename)
-{
-	int desc;
-
-	desc = open(filename, O_WRONLY | O_APPEND);
-	if (desc < 0)
-		desc = open(filename, O_WRONLY | O_EXCL | O_CREAT, 0664);
-	if (desc < 0)
-		errexit(WERR, filename, 0);
-	myclose(desc);
-	return (desc);
-}
-
-/**
- * main - the main function
- * @argc: the argument count
- * @argv: the arguments
- * Return: 0 if no problems, otherwise various error values
- */
-int main(int argc, char **argv)
-{
-	int desc, i, outdesc;
-	ssize_t ret, wstat;
-	char stuff[1024];
+	int src, dest, n_read = 1024, wrote, close_src, close_dest;
+	unsigned int mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+	char buffer[1024];
 
 	if (argc != 3)
-		errexit(ARGERR, NULL, 0);
-
-	if (!(argv[1]))
-		errexit(RERR, argv[1], 0);
-
-	desc = open(argv[1], O_RDONLY);
-
-	if (desc < 0)
-		errexit(RERR, argv[1], 0);
-
-	if (!(argv[2]) || initwrite(argv[2]) < 0)
-		errexit(WERR, argv[2], 0);
-	outdesc = open(argv[2], O_WRONLY | O_TRUNC);
-
-	while (1)
 	{
-		for (i = 0; i < 1024; i++)
-			stuff[i] = 0;
-
-		ret = read(desc, stuff, 1024);
-
-		if (ret < 0)
-			errexit(RERR, argv[1], 0);
-
-		wstat = write(outdesc, stuff, ret);
-		if (wstat != ret)
-			errexit(WERR, argv[2], 0);
-		if (wstat != 1024)
-			break;
-
+		dprintf(STDERR_FILENO, "%s", "Usage: cp file_from file_to\n");
+		exit(97);
 	}
-	myclose(outdesc);
-	myclose(desc);
-
+	src = open(argv[1], O_RDONLY);
+	check_IO_stat(src, -1, argv[1], 'O');
+	dest = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, mode);
+	check_IO_stat(dest, -1, argv[2], 'W');
+	while (n_read == 1024)
+	{
+		n_read = read(src, buffer, sizeof(buffer));
+		if (n_read == -1)
+			check_IO_stat(-1, -1, argv[1], 'O');
+		wrote = write(dest, buffer, n_read);
+		if (wrote == -1)
+			check_IO_stat(-1, -1, argv[2], 'W');
+	}
+	close_src = close(src);
+	check_IO_stat(close_src, src, NULL, 'C');
+	close_dest = close(dest);
+	check_IO_stat(close_dest, dest, NULL, 'C');
 	return (0);
+}
+
+/**
+ * check_IO_stat - checks if a file can be opened or closed
+ * @stat: file descriptor of the file to be opened
+ * @filename: name of the file
+ * @mode: closing or opening
+ * @fd: file descriptor
+ *
+ * Return: void
+ */
+void check_IO_stat(int stat, int fd, char *filename, char mode)
+{
+	if (mode == 'C' && stat == -1)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
+		exit(100);
+	}
+	else if (mode == 'O' && stat == -1)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", filename);
+		exit(98);
+	}
+	else if (mode == 'W' && stat == -1)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", filename);
+		exit(99);
+	}
 }
